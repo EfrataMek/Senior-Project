@@ -206,13 +206,8 @@ model Teachers_Per_Course_Term {
   courses_per_term    Courses_Per_Term @relation(fields: [courses_per_term_id], references: [id]) // foreign key
   created_at          DateTime         @default(now())
 
-  Assessment               Assessment[]
-  Schedule                 Schedule[]
-  Multiple_Choice_Question Multiple_Choice_Question[]
-  True_False_Question      True_False_Question[]
-  Matching_Column_A        Matching_Column_A[]
-  Essay_Question           Essay_Question[]
-  Instruction              Instruction[]
+  Assessment Assessment[]
+  Schedule   Schedule[]
 
   @@unique([teacher_id, courses_per_term_id])
 }
@@ -253,87 +248,135 @@ model Schedule {
 //************************************ASSESSMENT RELATED MODELS************************************//
 
 model Multiple_Choice_Options {
-  id                          Int                      @id @default(autoincrement())
-  multiple_choice_question_id Int
-  multiple_choice_question    Multiple_Choice_Question @relation(fields: [multiple_choice_question_id], references: [id]) // foreign key
-  choice                      String
-  is_answer                   Boolean                  @default(false)
+  id                               Int                           @id @default(autoincrement())
+  multiple_choice_question_bank_id Int
+  multiple_choice_question_bank    Multiple_Choice_Question_Bank @relation(fields: [multiple_choice_question_bank_id], references: [id]) // foreign key
+  choice                           String
+  is_answer                        Boolean                       @default(false)
 
   Students_answer_for_multiple_choice Students_answer_for_multiple_choice[]
 
-  @@unique([multiple_choice_question_id, choice])
+  @@unique([multiple_choice_question_bank_id, choice])
+}
+
+model Multiple_Choice_Question_Bank {
+  id            Int        @id @default(autoincrement())
+  question      String
+  assessment_id Int
+  assessment    Assessment @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight        Int
+
+  Multiple_Choice_Options  Multiple_Choice_Options[]
+  Multiple_Choice_Question Multiple_Choice_Question[]
 }
 
 model Multiple_Choice_Question {
-  id                          Int                      @id @default(autoincrement())
-  question                    String
-  teachers_per_course_term_id Int
-  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
-  assessment_id               Int
-  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
-  weight                      Int
+  id                               Int                           @id @default(autoincrement())
+  multiple_choice_question_bank_id Int
+  multiple_choice_question_bank    Multiple_Choice_Question_Bank @relation(fields: [multiple_choice_question_bank_id], references: [id]) // foreign key
+  assessment_id                    Int
+  assessment                       Assessment                    @relation(fields: [assessment_id], references: [id]) //foreign key
 
-  Multiple_Choice_Options Multiple_Choice_Options[]
+  @@unique([assessment_id, multiple_choice_question_bank_id])
+}
+
+model True_False_Question_Bank {
+  id            Int        @id @default(autoincrement())
+  question      String
+  answer        Boolean
+  assessment_id Int
+  assessment    Assessment @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight        Int
+
+  True_False_Question True_False_Question[]
 }
 
 model True_False_Question {
   id                          Int                      @id @default(autoincrement())
-  question                    String
-  answer                      Boolean
-  teachers_per_course_term_id Int
-  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  true_false_question_bank_id Int
+  true_false_question_bank    True_False_Question_Bank @relation(fields: [true_false_question_bank_id], references: [id]) // foreign key
   assessment_id               Int
   assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
-  weight                      Int
 
   Students_answer_for_true_false Students_answer_for_true_false[]
+
+  @@unique([assessment_id, true_false_question_bank_id])
+}
+
+model Matching_Column_A_Bank {
+  id            Int               @id @default(autoincrement())
+  question      String
+  answer_id     Int
+  answer        Matching_Column_B @relation(fields: [answer_id], references: [id]) // foreign key
+  assessment_id Int
+  assessment    Assessment        @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight        Int
+
+  Matching_Column_A Matching_Column_A[]
 }
 
 model Matching_Column_A {
-  id                          Int                      @id @default(autoincrement())
-  question                    String
-  teachers_per_course_term_id Int
-  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
-  answer_id                   Int
-  answer                      Matching_Column_B        @relation(fields: [answer_id], references: [id]) // foreign key
-  assessment_id               Int
-  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
-  weight                      Int
+  id                        Int                    @id @default(autoincrement())
+  matching_column_A_bank_id Int
+  matching_column_A_bank    Matching_Column_A_Bank @relation(fields: [matching_column_A_bank_id], references: [id]) // foreign key
+  assessment_id             Int
+  assessment                Assessment             @relation(fields: [assessment_id], references: [id]) //foreign key
 
   Students_answer_for_matching Students_answer_for_matching[]
+
+  @@unique([assessment_id, matching_column_A_bank_id])
 }
 
 model Matching_Column_B {
   id       Int    @id @default(autoincrement())
   question String
 
-  matching_column_a            Matching_Column_A[]
+  matching_column_a_bank       Matching_Column_A_Bank[]
   Students_answer_for_matching Students_answer_for_matching[]
 }
 
+model Essay_Question_Bank {
+  id            Int        @id @default(autoincrement())
+  question      String
+  answer        String
+  assessment_id Int
+  assessment    Assessment @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight        Int
+
+  Essay_Question Essay_Question[]
+}
+
 model Essay_Question {
-  id                          Int                      @id @default(autoincrement())
-  question                    String
-  answer                      String
-  teachers_per_course_term_id Int
-  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
-  assessment_id               Int
-  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
-  weight                      Int
+  id                     Int                 @id @default(autoincrement())
+  essay_question_bank_id Int
+  essay_question_bank    Essay_Question_Bank @relation(fields: [essay_question_bank_id], references: [id]) // foreign key
+  assessment_id          Int
+  assessment             Assessment          @relation(fields: [assessment_id], references: [id]) //foreign key
 
   Students_answer_for_essay Students_answer_for_essay[]
+
+  @@unique([assessment_id, essay_question_bank_id])
+}
+
+model Instruction_Bank {
+  id                                        Int           @id @default(autoincrement())
+  instruction                               String
+  question_type                             Question_Type
+  assessment_id                             Int
+  assessment                                Assessment    @relation(fields: [assessment_id], references: [id]) //foreign key
+  is_perfect_score_only_for_multiple_choice Boolean       @default(false)
+  order_of_question_type_appearance         Int
+
+  Instruction Instruction[]
 }
 
 model Instruction {
-  id                                        Int                      @id @default(autoincrement())
-  instruction                               String
-  assessment_type                           Question_Type
-  assessment_id                             Int
-  assessment                                Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
-  teachers_per_course_term_id               Int
-  teachers_per_course_term                  Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
-  is_perfect_score_only_for_multiple_choice Boolean                  @default(false)
-  order_of_question_type_appearance         Int
+  instruction_bank_id Int
+  instruction_bank    Instruction_Bank @relation(fields: [instruction_bank_id], references: [id]) // foreign key
+  assessment_id       Int
+  assessment          Assessment       @relation(fields: [assessment_id], references: [id]) //foreign key
+
+  @@unique([assessment_id, instruction_bank_id])
 }
 
 model Assessment {
@@ -350,12 +393,17 @@ model Assessment {
   weight                      Int
   created_at                  DateTime                 @default(now())
 
-  Essay_Question           Essay_Question[]
-  Matching_Column_A        Matching_Column_A[]
-  True_False_Question      True_False_Question[]
-  Multiple_Choice_Question Multiple_Choice_Question[]
-  Instruction              Instruction[]
-  Assessment_for_sections  Assessment_for_sections[]
+  Assessment_for_sections       Assessment_for_sections[]
+  Multiple_Choice_Question_Bank Multiple_Choice_Question_Bank[]
+  Multiple_Choice_Question      Multiple_Choice_Question[]
+  True_False_Question_Bank      True_False_Question_Bank[]
+  True_False_Question           True_False_Question[]
+  Matching_Column_A_Bank        Matching_Column_A_Bank[]
+  Matching_Column_A             Matching_Column_A[]
+  Essay_Question_Bank           Essay_Question_Bank[]
+  Essay_Question                Essay_Question[]
+  Instruction_Bank              Instruction_Bank[]
+  Instruction                   Instruction[]
 }
 
 model Assessment_for_sections {
@@ -516,10 +564,10 @@ model Individual_Message {
 }
 
 model Poll_Options {
-  id            Int             @id @default(autoincrement())
-  message_id    Int
-  message       Messages        @relation(fields: [message_id], references: [id]) // foreign key
-  option        String
+  id         Int      @id @default(autoincrement())
+  message_id Int
+  message    Messages @relation(fields: [message_id], references: [id]) // foreign key
+  option     String
 
   Polls_Choosen Polls_Choosen[]
 
