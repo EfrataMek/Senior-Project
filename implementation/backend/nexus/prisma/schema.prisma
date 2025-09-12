@@ -1,0 +1,538 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Student
+  Teacher
+  Admin
+}
+
+enum Attendance_Status {
+  Absent
+  Permission
+}
+
+enum Schedule_Type {
+  Normal
+  Mid_Exam
+  Final_Exam
+}
+
+enum User_Status {
+  Active
+  Removed
+  Withdraw
+  Graduate
+}
+
+enum Question_Type {
+  Multiple_Choice
+  True_False
+  Matching
+  Essay
+}
+
+enum Assessment_Type {
+  Quiz
+  Assignment
+  Mock_Exam
+  Mid_Exam
+  Final_Exam
+}
+
+enum File_Type {
+  Image
+  Document
+  Video
+  Audio
+}
+
+enum Group_Type {
+  Courses_Per_Term
+  Batch
+  Admin_Created
+  HiLCoE_Official
+}
+
+enum Message_Type {
+  Individual
+  Group
+  Poll
+  Anonymous_Poll
+}
+
+//////////////////////////////////////////MODELS//////////////////////////////////////////
+
+//************************************SCHOOL RELATED MODELS************************************//
+
+model Room {
+  id         String   @id //like LR201
+  created_at DateTime @default(now())
+
+  Schedule Schedule[]
+}
+
+model Term {
+  id               Int      @id @default(autoincrement())
+  name             String   @unique //like WIN2025
+  lecture_start_at DateTime @db.Date
+  start_mid_exam   DateTime @db.Date
+  end_mid_exam     DateTime @db.Date
+  start_final_exam DateTime @db.Date
+  end_final_exam   DateTime @db.Date
+  lecture_end_date DateTime @db.Date
+  created_at       DateTime @default(now())
+
+  Courses_Per_Term Courses_Per_Term[]
+}
+
+//************************************USER RELATED MODELS************************************//
+model Sections {
+  id         Int      @id @default(autoincrement())
+  section    String   @db.Char(1)
+  batch_id   Int
+  batch      Batch    @relation(fields: [batch_id], references: [id]) // foreign key
+  created_at DateTime @default(now())
+
+  Schedule                  Schedule[]
+  Assessment_for_sections   Assessment_for_sections[]
+  student_course_enrollment Student_Course_Enrollment[]
+}
+
+model Batch {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+
+  users    User[]
+  Sections Sections[]
+}
+
+model User {
+  id            String      @id
+  first_name    String
+  middle_name   String
+  last_name     String
+  date_of_birth DateTime
+  email         String      @unique
+  password      String      @unique
+  phone_number  String      @unique
+  role          Role
+  batch_id      Int?
+  batch         Batch?      @relation(fields: [batch_id], references: [id]) // foreign key
+  image_path    String?     @unique
+  user_status   User_Status @default(Active)
+  created_at    DateTime    @default(now())
+
+  Teachers_Per_Course_Term        Teachers_Per_Course_Term[]
+  Student_Course_Enrollment       Student_Course_Enrollment[]
+  Group_Message_Seen              Group_Message_Seen[]
+  Group_Members_for_Admin_Created Group_Members_for_Admin_Created[]
+  Messages                        Messages[]
+  Individual_Message              Individual_Message[]
+  Polls_Choosen                   Polls_Choosen[]
+}
+
+model Student_Course_Enrollment {
+  id                  Int              @id @default(autoincrement())
+  student_id          String
+  student             User             @relation(fields: [student_id], references: [id]) //foreign key
+  courses_per_term_id Int
+  courses_per_term    Courses_Per_Term @relation(fields: [courses_per_term_id], references: [id]) // foreign key
+  sections_id         Int
+  sections            Sections         @relation(fields: [sections_id], references: [id]) // foreign key
+  created_at          DateTime         @default(now())
+
+  Attendance                     Attendance[]
+  Students_answer_for_Assessment Students_answer_for_Assessment[]
+
+  @@unique([student_id, courses_per_term_id])
+}
+
+model Attendance {
+  id                           Int                       @id @default(autoincrement())
+  student_course_enrollment_id Int
+  student_course_enrollment    Student_Course_Enrollment @relation(fields: [student_course_enrollment_id], references: [id]) // foreign key
+  date                         DateTime
+  Schedule_id                  Int
+  schedule                     Schedule                  @relation(fields: [Schedule_id], references: [id]) //foreign key
+  status                       Attendance_Status
+  created_at                   DateTime                  @default(now())
+}
+
+//************************************COURSE RELATED MODELS************************************//
+
+model Course {
+  id          String   @id
+  name        String   @unique
+  description String
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  course           Prerequesties[]
+  prereq           Prerequesties[]    @relation("course_Prereq")
+  Courses_Per_Term Courses_Per_Term[]
+}
+
+model Prerequesties {
+  id         Int      @id @default(autoincrement())
+  course_id  String
+  course     Course   @relation(fields: [course_id], references: [id]) // foreign key
+  prereq_id  String
+  prereq     Course   @relation("course_Prereq", fields: [prereq_id], references: [id]) // foreign key
+  created_at DateTime @default(now())
+
+  @@unique([course_id, prereq_id])
+}
+
+model Teachers_Per_Course_Term {
+  id                  Int              @id @default(autoincrement())
+  teacher_id          String
+  teacher             User             @relation(fields: [teacher_id], references: [id]) //foreign key
+  courses_per_term_id Int
+  courses_per_term    Courses_Per_Term @relation(fields: [courses_per_term_id], references: [id]) // foreign key
+  created_at          DateTime         @default(now())
+
+  Assessment               Assessment[]
+  Schedule                 Schedule[]
+  Multiple_Choice_Question Multiple_Choice_Question[]
+  True_False_Question      True_False_Question[]
+  Matching_Column_A        Matching_Column_A[]
+  Essay_Question           Essay_Question[]
+  Instruction              Instruction[]
+
+  @@unique([teacher_id, courses_per_term_id])
+}
+
+model Courses_Per_Term {
+  id         Int      @id @default(autoincrement())
+  term_id    Int
+  term       Term     @relation(fields: [term_id], references: [id]) // foreign key
+  course_id  String
+  course     Course   @relation(fields: [course_id], references: [id]) // foreign key
+  created_at DateTime @default(now())
+
+  Teachers_Per_Course_Term  Teachers_Per_Course_Term[]
+  student_course_enrollment Student_Course_Enrollment[]
+
+  @@unique([term_id, course_id])
+}
+
+model Schedule {
+  id                          Int                      @id @default(autoincrement())
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  sections_id                 Int
+  sections                    Sections                 @relation(fields: [sections_id], references: [id]) // foreign key
+  day                         Int
+  start_time                  DateTime                 @db.Time()
+  end_time                    DateTime                 @db.Time()
+  room_id                     String
+  room                        Room                     @relation(fields: [room_id], references: [id]) // foreign key
+  type                        Schedule_Type
+  created_at                  DateTime                 @default(now())
+
+  Attendance Attendance[]
+
+  @@unique([teachers_per_course_term_id, type, room_id, day, start_time, end_time])
+}
+
+//************************************ASSESSMENT RELATED MODELS************************************//
+
+model Multiple_Choice_Options {
+  id                          Int                      @id @default(autoincrement())
+  multiple_choice_question_id Int
+  multiple_choice_question    Multiple_Choice_Question @relation(fields: [multiple_choice_question_id], references: [id]) // foreign key
+  choice                      String
+  is_answer                   Boolean                  @default(false)
+
+  Students_answer_for_multiple_choice Students_answer_for_multiple_choice[]
+
+  @@unique([multiple_choice_question_id, choice])
+}
+
+model Multiple_Choice_Question {
+  id                          Int                      @id @default(autoincrement())
+  question                    String
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  assessment_id               Int
+  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight                      Int
+
+  Multiple_Choice_Options Multiple_Choice_Options[]
+}
+
+model True_False_Question {
+  id                          Int                      @id @default(autoincrement())
+  question                    String
+  answer                      Boolean
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  assessment_id               Int
+  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight                      Int
+
+  Students_answer_for_true_false Students_answer_for_true_false[]
+}
+
+model Matching_Column_A {
+  id                          Int                      @id @default(autoincrement())
+  question                    String
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  answer_id                   Int
+  answer                      Matching_Column_B        @relation(fields: [answer_id], references: [id]) // foreign key
+  assessment_id               Int
+  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight                      Int
+
+  Students_answer_for_matching Students_answer_for_matching[]
+}
+
+model Matching_Column_B {
+  id       Int    @id @default(autoincrement())
+  question String
+
+  matching_column_a            Matching_Column_A[]
+  Students_answer_for_matching Students_answer_for_matching[]
+}
+
+model Essay_Question {
+  id                          Int                      @id @default(autoincrement())
+  question                    String
+  answer                      String
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  assessment_id               Int
+  assessment                  Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
+  weight                      Int
+
+  Students_answer_for_essay Students_answer_for_essay[]
+}
+
+model Instruction {
+  id                                        Int                      @id @default(autoincrement())
+  instruction                               String
+  assessment_type                           Question_Type
+  assessment_id                             Int
+  assessment                                Assessment               @relation(fields: [assessment_id], references: [id]) //foreign key
+  teachers_per_course_term_id               Int
+  teachers_per_course_term                  Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  is_perfect_score_only_for_multiple_choice Boolean                  @default(false)
+  order_of_question_type_appearance         Int
+}
+
+model Assessment {
+  id                          Int                      @id @default(autoincrement())
+  name                        String
+  description                 String?
+  assessment_Type             Assessment_Type
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  is_posted                   Boolean                  @default(false)
+  start_time                  DateTime
+  duration                    DateTime?                @db.Time()
+  due_date                    DateTime
+  weight                      Int
+  created_at                  DateTime                 @default(now())
+
+  Essay_Question           Essay_Question[]
+  Matching_Column_A        Matching_Column_A[]
+  True_False_Question      True_False_Question[]
+  Multiple_Choice_Question Multiple_Choice_Question[]
+  Instruction              Instruction[]
+  Assessment_for_sections  Assessment_for_sections[]
+}
+
+model Assessment_for_sections {
+  id            Int        @id @default(autoincrement())
+  assessment_id Int
+  assessment    Assessment @relation(fields: [assessment_id], references: [id]) // foreign key
+  sections_id   Int
+  sections      Sections   @relation(fields: [sections_id], references: [id]) // foreign key
+
+  Students_answer_for_Assessment Students_answer_for_Assessment[]
+
+  @@unique([assessment_id, sections_id])
+}
+
+model Students_answer_for_Assessment {
+  id                           Int                       @id @default(autoincrement())
+  student_course_enrollment_id Int
+  student_course_enrollment    Student_Course_Enrollment @relation(fields: [student_course_enrollment_id], references: [id]) // foreign key
+  assessment_for_sections_id   Int
+  assessment_for_sections      Assessment_for_sections   @relation(fields: [assessment_for_sections_id], references: [id]) // foreign key
+  feedback                     String?
+  created_at                   DateTime                  @default(now())
+
+  Students_answer_for_multiple_choice Students_answer_for_multiple_choice[]
+  Students_answer_for_true_false      Students_answer_for_true_false[]
+  Students_answer_for_matching        Students_answer_for_matching[]
+  Students_answer_for_essay           Students_answer_for_essay[]
+
+  @@unique([student_course_enrollment_id, assessment_for_sections_id])
+}
+
+model Students_answer_for_multiple_choice {
+  id                                Int                            @id @default(autoincrement())
+  students_answer_for_Assessment_id Int
+  students_answer_for_Assessment    Students_answer_for_Assessment @relation(fields: [students_answer_for_Assessment_id], references: [id]) // foreign key
+  multiple_choice_option_id         Int
+  multiple_choice_option            Multiple_Choice_Options        @relation(fields: [multiple_choice_option_id], references: [id]) // foreign key
+
+  @@unique([students_answer_for_Assessment_id, multiple_choice_option_id])
+}
+
+model Students_answer_for_true_false {
+  id                                Int                            @id @default(autoincrement())
+  students_answer_for_Assessment_id Int
+  students_answer_for_Assessment    Students_answer_for_Assessment @relation(fields: [students_answer_for_Assessment_id], references: [id]) // foreign key
+  true_false_question_id            Int
+  true_false_question               True_False_Question            @relation(fields: [true_false_question_id], references: [id]) // foreign key
+  answer                            Boolean
+
+  @@unique([students_answer_for_Assessment_id, true_false_question_id])
+}
+
+model Students_answer_for_matching {
+  id                                Int                            @id @default(autoincrement())
+  students_answer_for_Assessment_id Int
+  students_answer_for_Assessment    Students_answer_for_Assessment @relation(fields: [students_answer_for_Assessment_id], references: [id]) // foreign key
+  matching_column_a_id              Int
+  matching_column_a                 Matching_Column_A              @relation(fields: [matching_column_a_id], references: [id]) // foreign key
+  answer_id                         Int
+  answer                            Matching_Column_B              @relation(fields: [answer_id], references: [id]) // foreign key  
+
+  @@unique([students_answer_for_Assessment_id, matching_column_a_id])
+}
+
+model Students_answer_for_essay {
+  id                                Int                            @id @default(autoincrement())
+  students_answer_for_Assessment_id Int
+  students_answer_for_Assessment    Students_answer_for_Assessment @relation(fields: [students_answer_for_Assessment_id], references: [id]) // foreign key
+  essay_question_id                 Int
+  essay_question                    Essay_Question                 @relation(fields: [essay_question_id], references: [id]) // foreign key
+  answer                            String
+  grade                             Decimal
+}
+
+//************************************COMMUNICATION RELATED MODELS************************************//
+
+model All_Files {
+  id         Int       @id @default(autoincrement())
+  file_path  String    @unique
+  file_type  File_Type
+  created_at DateTime  @default(now())
+
+  Messages Messages[]
+}
+
+model Messages {
+  id                    Int          @id @default(autoincrement())
+  content               String?
+  //is_file               Boolean      @default(false)
+  file_id               Int?
+  file                  All_Files?   @relation(fields: [file_id], references: [id]) // foreign key
+  sender_id             String
+  sender                User         @relation(fields: [sender_id], references: [id]) // foreign key
+  replied_to_message_id Int?
+  replied_to_message    Messages?    @relation("MessageReplies", fields: [replied_to_message_id], references: [id]) // self-relation
+  message_type          Message_Type
+
+  replied_messages   Messages[]           @relation("MessageReplies")
+  Group_Message      Group_Message[]
+  Individual_Message Individual_Message[]
+  Poll_Options       Poll_Options[]
+}
+
+model Group_Metadata {
+  id            Int        @id @default(autoincrement())
+  name          String
+  description   String
+  group_type    Group_Type
+  group_type_id Int?
+  created_at    DateTime   @default(now())
+
+  Group_Message                   Group_Message[]
+  Group_Members_for_Admin_Created Group_Members_for_Admin_Created[]
+}
+
+model Group_Members_for_Admin_Created {
+  id                Int            @id @default(autoincrement())
+  member_id         String
+  member            User           @relation(fields: [member_id], references: [id]) // foreign key
+  group_metadata_id Int
+  group_metadata    Group_Metadata @relation(fields: [group_metadata_id], references: [id]) // foreign key
+  joined_date       DateTime
+}
+
+model Group_Message {
+  id                Int            @id @default(autoincrement())
+  is_announcement   Boolean        @default(false)
+  is_forwarded      Boolean        @default(false)
+  message_id        Int
+  message           Messages       @relation(fields: [message_id], references: [id]) // foreign key
+  group_metadata_id Int
+  group_metadata    Group_Metadata @relation(fields: [group_metadata_id], references: [id]) // foreign key
+  sent_at           DateTime       @default(now())
+
+  Group_Message_Seen Group_Message_Seen[]
+}
+
+model Group_Message_Seen {
+  id               Int           @id @default(autoincrement())
+  group_message_id Int
+  group_message    Group_Message @relation(fields: [group_message_id], references: [id]) // foreign key
+  seen_by_id       String
+  seen_by          User          @relation(fields: [seen_by_id], references: [id]) // foreign key
+  seen_at          DateTime      @default(now())
+
+  @@unique([group_message_id, seen_by_id])
+}
+
+model Individual_Message {
+  id           Int      @id @default(autoincrement())
+  is_forwarded Boolean  @default(false)
+  message_id   Int
+  message      Messages @relation(fields: [message_id], references: [id]) // foreign key
+  receiver_id  String
+  receiver     User     @relation(fields: [receiver_id], references: [id]) // foreign key
+  seen_at      DateTime @default(now())
+  sent_at      DateTime @default(now())
+}
+
+model Poll_Options {
+  id            Int             @id @default(autoincrement())
+  message_id    Int
+  message       Messages        @relation(fields: [message_id], references: [id]) // foreign key
+  option        String
+
+  Polls_Choosen Polls_Choosen[]
+
+  @@unique([message_id, option])
+}
+
+model Polls_Choosen {
+  id             Int          @id @default(autoincrement())
+  poll_option_id Int
+  poll_option    Poll_Options @relation(fields: [poll_option_id], references: [id]) // foreign key
+  chooser_id     String
+  user           User         @relation(fields: [chooser_id], references: [id]) // foreign key
+  created_at     DateTime     @default(now())
+
+  @@unique([poll_option_id, chooser_id])
+}
