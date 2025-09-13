@@ -1,4 +1,4 @@
-name: performance_playground
+name: common
 description: "A new Flutter package project."
 version: 0.0.1
 homepage:
@@ -8,8 +8,13 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  dropdown_button2: ^2.3.9
   flutter:
     sdk: flutter
+  flutter_quill: ^11.4.2
+  flutter_quill_extensions: ^11.0.0
+  google_fonts: ^6.3.1
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

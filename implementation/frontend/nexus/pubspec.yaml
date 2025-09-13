@@ -13,8 +13,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   calendar:
     path: modules/calendar
-  performance_playground:
-    path: modules/performance_playground
+  common:
+    path: modules/common
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +26,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Libertinus_Keyboard
+      fonts:
+        - asset: fonts/Libertinus_Keyboard/LibertinusKeyboard-Regular.ttf
+    - family: Inspiration
+      fonts:
+        - asset: fonts/Inspiration/Inspiration-Regular.ttf
+    - family: times_new_roman
+      fonts:
+        - asset: fonts/times-new-roman/times.ttf

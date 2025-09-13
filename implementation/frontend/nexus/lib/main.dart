@@ -1,8 +1,11 @@
+import 'package:common/common.dart';
+import 'package:common/rich%20text%20editor/quill.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 //import 'package:calendar/synccalendar.dart';
 //import 'package:calendar/kcalendar.dart';
-import 'package:flutter/rendering.dart';
-import 'package:performance_playground/performance_playground.dart';
+//import 'package:common/common.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,16 +28,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugRepaintRainbowEnabled = true;
-    debugProfileLayoutsEnabled = true;
-    debugProfileBuildsEnabled = true;
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: SafeArea(child: PerformancePlayground()),
+      localizationsDelegates: const [
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    FlutterQuillLocalizations.delegate,
+    
+  ],
+      home: SafeArea(child: HomePage()),
     );
   }
 }
