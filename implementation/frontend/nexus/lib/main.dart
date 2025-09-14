@@ -1,5 +1,5 @@
 import 'package:common/common.dart';
-import 'package:common/rich%20text%20editor/quill.dart';
+import 'package:common/rich_text_editor/quill.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -31,16 +31,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      theme: ThemeData.dark(
+        //colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       localizationsDelegates: const [
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    FlutterQuillLocalizations.delegate,
-    
-  ],
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        FlutterQuillLocalizations.delegate,
+      ],
       home: SafeArea(child: HomePage()),
     );
   }

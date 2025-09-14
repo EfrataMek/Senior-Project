@@ -1,11 +1,13 @@
-//import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/flutter_quill.dart';
+import 'list_of_fonts.dart';
 
 class FontToolbar extends StatefulWidget {
-  final quill.QuillController controller;
-  const FontToolbar({required this.controller, super.key});
+  final QuillController controller;
+  final QuillToolbarBaseButtonOptions base;
+
+  const FontToolbar({super.key, required this.controller, required this.base});
 
   @override
   State<FontToolbar> createState() => _FontToolbarState();
@@ -33,17 +35,6 @@ class _FontToolbarState extends State<FontToolbar> {
     72,
   ];
 
-  /*  final List<String> fontFamilies = [
-    "Arial",
-    "Times New Roman",
-    "Courier New",
-    "Verdana",
-    "Georgia",
-    "Tahoma",
-  ]; */
-
-  String? currentFontFamily;
-
   @override
   void initState() {
     widget.controller.addListener(_updateSelection);
@@ -62,36 +53,21 @@ class _FontToolbarState extends State<FontToolbar> {
         '';
     if (currentSize != '' && _sizeController.text != currentSize) {
       _sizeController.text = currentSize;
-    } else {
+    } else if(currentSize == '') {
       _sizeController.text = '16';
     }
 
-    // update font family
-    /*  final currentFamily = widget.controller
-        .getSelectionStyle()
-        .attributes['font']
-        ?.value
-        .toString();
-    if (currentFamily != null && currentFamily != currentFontFamily) {
-      setState(() => currentFontFamily = currentFamily);
-    } */
   }
 
   void _applyFontSize(String value) {
     final size = double.tryParse(value);
     if (size != null) {
       widget.controller.formatSelection(
-        quill.Attribute.fromKeyValue('size', value),
+        Attribute.fromKeyValue('size', value),
       );
     }
+    widget.base.afterButtonPressed!();
   }
-
-  /*  void _applyFontFamily(String family) {
-    widget.controller.formatSelection(
-      quill.Attribute.fromKeyValue('font', family),
-    );
-    setState(() => currentFontFamily = family);
-  } */
 
   @override
   void dispose() {
@@ -110,66 +86,15 @@ class _FontToolbarState extends State<FontToolbar> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          quill.QuillToolbarFontFamilyButton(
+          QuillToolbarFontFamilyButton(
             controller: widget.controller,
-            options: quill.QuillToolbarFontFamilyButtonOptions(
-              items: {
-                /* 'Sans Serif': 'sans-serif',
-                  'Serif': 'serif',
-                  'Monospace': 'monospace',
-                  'Ibarra Real Nova': 'ibarra-real-nova',
-                  'SquarePeg': 'square-peg',
-                  'Nunito': 'nunito',
-                  'Pacifico': 'pacifico',
-                  'Roboto Mono': 'roboto-mono', */
-                'Times New Roman': 'times_new_roman',
-                'Inspiration': 'Inspiration',
-                'Libertinus Keyboard': 'Libertinus_Keyboard',
-                'clear': 'Clear',
-              },
+            options: QuillToolbarFontFamilyButtonOptions(
+              items: listOfFonts,
               initialValue: 'Times New Roman',
-         
             ),
+            baseOptions: widget.base,
           ),
 
-          /* DropdownButtonHideUnderline(
-            child: DropdownButton2<String>(
-              value: currentFontFamily,
-              hint: const Text("Font"),
-              items: fontFamilies.map((family) {
-                return DropdownMenuItem(
-                  value: family,
-                  child: Text(family, style: TextStyle(fontFamily: family)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) _applyFontFamily(value);
-              },
-              buttonStyleData: ButtonStyleData(
-                overlayColor: WidgetStatePropertyAll(Colors.transparent),
-              ),
-              iconStyleData: const IconStyleData(
-                icon: Icon(Icons.arrow_forward_ios_outlined),
-                iconSize: 14,
-              ),
-              dropdownStyleData: DropdownStyleData(
-                maxHeight: 500,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                offset: const Offset(0, -3),
-                scrollbarTheme: ScrollbarThemeData(
-                  radius: const Radius.circular(40),
-                  thickness: WidgetStateProperty.all<double>(6),
-                  thumbVisibility: WidgetStateProperty.all<bool>(true),
-                ),
-              ),
-              menuItemStyleData: const MenuItemStyleData(
-                height: 40,
-                padding: EdgeInsets.only(left: 14, right: 14),
-              ),
-            ),
-          ), */
           VerticalDivider(color: Colors.black54),
           SizedBox(
             width: 80,

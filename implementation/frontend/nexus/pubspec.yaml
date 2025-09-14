@@ -36,3 +36,7 @@ flutter:
     - family: times_new_roman
       fonts:
         - asset: fonts/times-new-roman/times.ttf
+    - family: ALGER
+      fonts:
+        - asset: fonts/ALGER.TTF
+
