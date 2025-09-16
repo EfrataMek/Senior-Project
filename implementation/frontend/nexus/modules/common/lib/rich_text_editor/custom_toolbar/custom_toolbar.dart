@@ -60,7 +60,7 @@ class CustomToolbar extends StatelessWidget {
         ),
         QuillToolbarImageButton(controller: controller, baseOptions: base),
         QuillToolbarCameraButton(controller: controller, baseOptions: base),
-        QuillToolbarVideoButton(controller: controller, baseOptions: base),
+        //QuillToolbarVideoButton(controller: controller, baseOptions: base),
         const VerticalDivider(),
         QuillToolbarColorButton(
           controller: controller,
@@ -87,6 +87,7 @@ class CustomToolbar extends StatelessWidget {
               Attribute.h6,
               Attribute.header,
             ],
+            
             /* afterButtonPressed: () {
               
               controller.formatSelection(

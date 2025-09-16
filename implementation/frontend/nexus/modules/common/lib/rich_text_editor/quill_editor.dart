@@ -46,12 +46,12 @@ class CustomQuillEditor extends StatelessWidget {
                   return null;
                 },
               ),
-              videoEmbedConfig: QuillEditorVideoEmbedConfig(
+              /* videoEmbedConfig: QuillEditorVideoEmbedConfig(
                 customVideoBuilder: (videoUrl, readOnly) {
                   // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
                   return null;
                 },
-              ),
+              ), */
             ),
             TimeStampEmbedBuilder(),
           ],

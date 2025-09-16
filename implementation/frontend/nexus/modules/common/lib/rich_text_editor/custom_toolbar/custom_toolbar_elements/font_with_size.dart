@@ -53,18 +53,15 @@ class _FontToolbarState extends State<FontToolbar> {
         '';
     if (currentSize != '' && _sizeController.text != currentSize) {
       _sizeController.text = currentSize;
-    } else if(currentSize == '') {
+    } else if (currentSize == '') {
       _sizeController.text = '16';
     }
-
   }
 
   void _applyFontSize(String value) {
     final size = double.tryParse(value);
     if (size != null) {
-      widget.controller.formatSelection(
-        Attribute.fromKeyValue('size', value),
-      );
+      widget.controller.formatSelection(Attribute.fromKeyValue('size', value));
     }
     widget.base.afterButtonPressed!();
   }
@@ -81,7 +78,7 @@ class _FontToolbarState extends State<FontToolbar> {
     return Container(
       height: 33,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black54, width: 1.0)),
+        border: Border(bottom: BorderSide(color: Colors.grey, width: 1.0)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -95,7 +92,7 @@ class _FontToolbarState extends State<FontToolbar> {
             baseOptions: widget.base,
           ),
 
-          VerticalDivider(color: Colors.black54),
+          VerticalDivider(color: Colors.grey),
           SizedBox(
             width: 80,
             child: Row(

@@ -45,14 +45,6 @@ enum Question_Type {
   Essay
 }
 
-enum Assessment_Type {
-  Quiz
-  Assignment
-  Mock_Exam
-  Mid_Exam
-  Final_Exam
-}
-
 enum File_Type {
   Image
   Document
@@ -72,6 +64,12 @@ enum Message_Type {
   Group
   Poll
   Anonymous_Poll
+}
+
+enum Submission_Type {
+  Text
+  File_Submission
+  Both
 }
 
 //////////////////////////////////////////MODELS//////////////////////////////////////////
@@ -99,6 +97,36 @@ model Term {
   Courses_Per_Term Courses_Per_Term[]
 }
 
+model Category {
+  id                 Int       @id @default(autoincrement())
+  name               String
+  course_id          String
+  course             Course    @relation(fields: [course_id], references: [id])
+  creator_id         String
+  creator            User      @relation(fields: [creator_id], references: [id]) // foreign key
+  parent_category_id Int?
+  parent_category    Category? @relation("ParentCategory", fields: [parent_category_id], references: [id]) // self-relation
+  createdAt          DateTime  @default(now())
+
+  subCategory                               Category[]                                  @relation("ParentCategory")
+  Category_of_Multiple_Choice_Question_Bank Category_of_Multiple_Choice_Question_Bank[]
+  Category_of_True_False_Question_Bank      Category_of_True_False_Question_Bank[]
+  Category_of_Matching_Column_A_Bank        Category_of_Matching_Column_A_Bank[]
+  Category_of_Essay_Question_Bank           Category_of_Essay_Question_Bank[]
+  Category_of_Project_Assignment_Bank       Category_of_Project_Assignment_Bank[]
+}
+
+model All_Files {
+  id         Int       @id @default(autoincrement())
+  file_path  String    @unique
+  file_type  File_Type
+  created_at DateTime  @default(now())
+
+  Messages                             Messages[]
+  Project_Assignment_Bank_Files        Project_Assignment_Bank_Files[]
+  Students_File_for_Project_Assignment Students_File_for_Project_Assignment[]
+}
+
 //************************************USER RELATED MODELS************************************//
 model Sections {
   id         Int      @id @default(autoincrement())
@@ -107,9 +135,10 @@ model Sections {
   batch      Batch    @relation(fields: [batch_id], references: [id]) // foreign key
   created_at DateTime @default(now())
 
-  Schedule                  Schedule[]
-  Assessment_for_sections   Assessment_for_sections[]
-  student_course_enrollment Student_Course_Enrollment[]
+  Schedule                        Schedule[]
+  Assessment_for_sections         Assessment_for_sections[]
+  student_course_enrollment       Student_Course_Enrollment[]
+  Project_Assignment_for_sections Project_Assignment_for_sections[]
 }
 
 model Batch {
@@ -137,18 +166,28 @@ model User {
   user_status   User_Status @default(Active)
   created_at    DateTime    @default(now())
 
-  Teachers_Per_Course_Term        Teachers_Per_Course_Term[]
-  Student_Course_Enrollment       Student_Course_Enrollment[]
-  Group_Message_Seen              Group_Message_Seen[]
-  Group_Members_for_Admin_Created Group_Members_for_Admin_Created[]
-  Messages                        Messages[]
-  Individual_Message              Individual_Message[]
-  Polls_Choosen                   Polls_Choosen[]
-  Multiple_Choice_Question_Bank   Multiple_Choice_Question_Bank[]
-  True_False_Question_Bank        True_False_Question_Bank[]
-  Matching_Column_A_Bank          Matching_Column_A_Bank[]
-  Essay_Question_Bank             Essay_Question_Bank[]
-  Instruction_Bank                Instruction_Bank[]
+  Teachers_Per_Course_Term                  Teachers_Per_Course_Term[]
+  Student_Course_Enrollment                 Student_Course_Enrollment[]
+  Group_Message_Seen                        Group_Message_Seen[]
+  Group_Members_for_Admin_Created           Group_Members_for_Admin_Created[]
+  Messages                                  Messages[]
+  Individual_Message                        Individual_Message[]
+  Polls_Choosen                             Polls_Choosen[]
+  Multiple_Choice_Question_Bank             Multiple_Choice_Question_Bank[]
+  True_False_Question_Bank                  True_False_Question_Bank[]
+  Matching_Column_A_Bank                    Matching_Column_A_Bank[]
+  Essay_Question_Bank                       Essay_Question_Bank[]
+  Instruction_Bank                          Instruction_Bank[]
+  Category                                  Category[]
+  Category_of_Multiple_Choice_Question_Bank Category_of_Multiple_Choice_Question_Bank[]
+  Category_of_True_False_Question_Bank      Category_of_True_False_Question_Bank[]
+  Category_of_Matching_Column_A_Bank        Category_of_Matching_Column_A_Bank[]
+  Category_of_Essay_Question_Bank           Category_of_Essay_Question_Bank[]
+  Project_Assignment_Bank                   Project_Assignment_Bank[]
+  Forum                                     Forum[]
+  Forum_votes                               Forum_votes[]
+  Forum_Comment_votes                       Forum_Comment_votes[]
+  Forum_Pinned                              Forum_Pinned[]
 }
 
 model Student_Course_Enrollment {
@@ -161,8 +200,10 @@ model Student_Course_Enrollment {
   sections            Sections         @relation(fields: [sections_id], references: [id]) // foreign key
   created_at          DateTime         @default(now())
 
-  Attendance                     Attendance[]
-  Students_answer_for_Assessment Students_answer_for_Assessment[]
+  Attendance                                 Attendance[]
+  Students_answer_for_Assessment             Students_answer_for_Assessment[]
+  students_submission_for_project_assignment students_submission_for_project_assignment[]
+  Group_Assignment_Member                    Group_Assignment_Member[]
 
   @@unique([student_id, courses_per_term_id])
 }
@@ -187,9 +228,15 @@ model Course {
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
 
-  course           Prerequesties[]
-  prereq           Prerequesties[]    @relation("course_Prereq")
-  Courses_Per_Term Courses_Per_Term[]
+  course                        Prerequesties[]
+  prereq                        Prerequesties[]                 @relation("course_Prereq")
+  Courses_Per_Term              Courses_Per_Term[]
+  Category                      Category[]
+  Project_Assignment_Bank       Project_Assignment_Bank[]
+  Multiple_Choice_Question_Bank Multiple_Choice_Question_Bank[]
+  True_False_Question_Bank      True_False_Question_Bank[]
+  Matching_Column_A_Bank        Matching_Column_A_Bank[]
+  Essay_Question_Bank           Essay_Question_Bank[]
 }
 
 model Prerequesties {
@@ -211,8 +258,10 @@ model Teachers_Per_Course_Term {
   courses_per_term    Courses_Per_Term @relation(fields: [courses_per_term_id], references: [id]) // foreign key
   created_at          DateTime         @default(now())
 
-  Assessment Assessment[]
-  Schedule   Schedule[]
+  Assessment              Assessment[]
+  Schedule                Schedule[]
+  Project_Assignment      Project_Assignment[]
+  Group_Assignment_Member Group_Assignment_Member[]
 
   @@unique([teacher_id, courses_per_term_id])
 }
@@ -227,6 +276,7 @@ model Courses_Per_Term {
 
   Teachers_Per_Course_Term  Teachers_Per_Course_Term[]
   student_course_enrollment Student_Course_Enrollment[]
+  Forum                     Forum[]
 
   @@unique([term_id, course_id])
 }
@@ -269,11 +319,24 @@ model Multiple_Choice_Question_Bank {
   question   String
   creator_id String
   creator    User     @relation(fields: [creator_id], references: [id]) // foreign key
+  course_id  String
+  course     Course   @relation(fields: [course_id], references: [id]) // foreign key
   weight     Int
   created_at DateTime @default(now())
 
-  Multiple_Choice_Options  Multiple_Choice_Options[]
-  Multiple_Choice_Question Multiple_Choice_Question[]
+  Multiple_Choice_Options                   Multiple_Choice_Options[]
+  Multiple_Choice_Question                  Multiple_Choice_Question[]
+  Category_of_Multiple_Choice_Question_Bank Category_of_Multiple_Choice_Question_Bank[]
+}
+
+model Category_of_Multiple_Choice_Question_Bank {
+  id                               Int                           @id @default(autoincrement())
+  multiple_choice_question_bank_id Int
+  multiple_choice_question_bank    Multiple_Choice_Question_Bank @relation(fields: [multiple_choice_question_bank_id], references: [id]) // foreign key
+  category_id                      Int
+  category                         Category                      @relation(fields: [category_id], references: [id]) //foreign key
+  categorizer_id                   String
+  categorizer                      User                          @relation(fields: [categorizer_id], references: [id]) //foreign key
 }
 
 model Multiple_Choice_Question {
@@ -294,10 +357,23 @@ model True_False_Question_Bank {
   answer     Boolean
   creator_id String
   creator    User     @relation(fields: [creator_id], references: [id]) // foreign key
+  course_id  String
+  course     Course   @relation(fields: [course_id], references: [id]) // foreign key
   weight     Int
   created_at DateTime @default(now())
 
-  True_False_Question True_False_Question[]
+  True_False_Question                  True_False_Question[]
+  Category_of_True_False_Question_Bank Category_of_True_False_Question_Bank[]
+}
+
+model Category_of_True_False_Question_Bank {
+  id                          Int                      @id @default(autoincrement())
+  true_false_question_bank_id Int
+  true_false_question_bank    True_False_Question_Bank @relation(fields: [true_false_question_bank_id], references: [id]) // foreign key
+  category_id                 Int
+  category                    Category                 @relation(fields: [category_id], references: [id]) //foreign key
+  categorizer_id              String
+  categorizer                 User                     @relation(fields: [categorizer_id], references: [id]) //foreign key
 }
 
 model True_False_Question {
@@ -321,10 +397,23 @@ model Matching_Column_A_Bank {
   answer     Matching_Column_B @relation(fields: [answer_id], references: [id]) // foreign key
   creator_id String
   creator    User              @relation(fields: [creator_id], references: [id]) // foreign key
+  course_id  String
+  course     Course            @relation(fields: [course_id], references: [id]) // foreign key
   weight     Int
   created_at DateTime          @default(now())
 
-  Matching_Column_A Matching_Column_A[]
+  Matching_Column_A                  Matching_Column_A[]
+  Category_of_Matching_Column_A_Bank Category_of_Matching_Column_A_Bank[]
+}
+
+model Category_of_Matching_Column_A_Bank {
+  id                        Int                    @id @default(autoincrement())
+  matching_column_A_bank_id Int
+  matching_column_A_bank    Matching_Column_A_Bank @relation(fields: [matching_column_A_bank_id], references: [id]) // foreign key
+  category_id               Int
+  category                  Category               @relation(fields: [category_id], references: [id]) //foreign key
+  categorizer_id            String
+  categorizer               User                   @relation(fields: [categorizer_id], references: [id]) //foreign key
 }
 
 model Matching_Column_A {
@@ -342,8 +431,10 @@ model Matching_Column_A {
 }
 
 model Matching_Column_B {
-  id       Int    @id @default(autoincrement())
-  question String
+  id            Int         @id @default(autoincrement())
+  question      String
+  assessment_id Int?
+  assessment    Assessment? @relation(fields: [assessment_id], references: [id]) //foreign key
 
   matching_column_a_bank       Matching_Column_A_Bank[]
   Students_answer_for_matching Students_answer_for_matching[]
@@ -355,10 +446,23 @@ model Essay_Question_Bank {
   answer     String
   creator_id String
   creator    User     @relation(fields: [creator_id], references: [id]) // foreign key
+  course_id  String
+  course     Course   @relation(fields: [course_id], references: [id]) // foreign key
   weight     Int
   created_at DateTime @default(now())
 
-  Essay_Question Essay_Question[]
+  Essay_Question                  Essay_Question[]
+  Category_of_Essay_Question_Bank Category_of_Essay_Question_Bank[]
+}
+
+model Category_of_Essay_Question_Bank {
+  id                     Int                 @id @default(autoincrement())
+  essay_question_bank_id Int
+  essay_question_bank    Essay_Question_Bank @relation(fields: [essay_question_bank_id], references: [id]) // foreign key
+  category_id            Int
+  category               Category            @relation(fields: [category_id], references: [id]) //foreign key
+  categorizer_id         String
+  categorizer            User                @relation(fields: [categorizer_id], references: [id]) //foreign key
 }
 
 model Essay_Question {
@@ -399,11 +503,130 @@ model Instruction {
   @@unique([assessment_id, instruction_bank_id])
 }
 
+model Project_Assignment_Bank_Files {
+  id                         Int                     @id @default(autoincrement())
+  project_assignment_bank_id Int
+  project_assignment_bank    Project_Assignment_Bank @relation(fields: [project_assignment_bank_id], references: [id]) //foreign key
+  file_id                    Int
+  file                       All_Files               @relation(fields: [file_id], references: [id])
+  created_at                 DateTime                @default(now())
+}
+
+model Project_Assignment_Bank {
+  id              Int             @id @default(autoincrement())
+  name            String
+  description     String?
+  instruction     String?
+  creator_id      String
+  creator         User            @relation(fields: [creator_id], references: [id]) // foreign key
+  course_id       String
+  course          Course          @relation(fields: [course_id], references: [id]) // foreign key
+  weight          Int
+  submission_type Submission_Type
+  created_at      DateTime        @default(now())
+
+  Project_Assignment_Bank_Files       Project_Assignment_Bank_Files[]
+  Project_Assignment                  Project_Assignment[]
+  Category_of_Project_Assignment_Bank Category_of_Project_Assignment_Bank[]
+}
+
+model Category_of_Project_Assignment_Bank {
+  id                         Int                     @id @default(autoincrement())
+  project_assignment_bank_id Int
+  project_assignment_bank    Project_Assignment_Bank @relation(fields: [project_assignment_bank_id], references: [id]) //foreign key
+  category_id                Int
+  category                   Category                @relation(fields: [category_id], references: [id]) //foreign key
+}
+
+model Group_Assignment_Metadata {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+
+  Group_Assignment_Member       Group_Assignment_Member[]
+  Groups_for_Project_Assignment Groups_for_Project_Assignment[]
+}
+
+model Group_Assignment_Member {
+  id                           Int                       @id @default(autoincrement())
+  student_course_enrollment_id Int
+  student_course_enrollment    Student_Course_Enrollment @relation(fields: [student_course_enrollment_id], references: [id]) // foreign key
+  teachers_per_course_term_id  Int
+  teachers_per_course_term     Teachers_Per_Course_Term  @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  group_assignment_metadata_id Int
+  group_assignment_metadata    Group_Assignment_Metadata @relation(fields: [group_assignment_metadata_id], references: [id]) // foreign key
+
+  @@unique([teachers_per_course_term_id, group_assignment_metadata_id])
+}
+
+model Groups_for_Project_Assignment {
+  id                           Int                       @id @default(autoincrement())
+  group_assignment_metadata_id Int
+  group_assignment_metadata    Group_Assignment_Metadata @relation(fields: [group_assignment_metadata_id], references: [id]) // foreign key
+  project_assignment_id        Int
+  project_assignment           Project_Assignment        @relation(fields: [project_assignment_id], references: [id]) // foreign key
+
+  @@unique([group_assignment_metadata_id, project_assignment_id])
+}
+
+model Project_Assignment {
+  id                          Int                      @id @default(autoincrement())
+  project_assignment_bank_id  Int
+  project_assignment_bank     Project_Assignment_Bank  @relation(fields: [project_assignment_bank_id], references: [id]) //foreign key
+  teachers_per_course_term_id Int
+  teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
+  is_posted                   Boolean                  @default(false)
+  start_time                  DateTime
+  duration                    DateTime?                @db.Time()
+  due_date                    DateTime
+  weight                      Int?
+  is_group_assignment         Boolean                  @default(false)
+  created_at                  DateTime                 @default(now())
+
+  Project_Assignment_for_sections Project_Assignment_for_sections[]
+  Groups_for_Project_Assignment   Groups_for_Project_Assignment[]
+}
+
+model Project_Assignment_for_sections {
+  id                    Int                @id @default(autoincrement())
+  project_assignment_id Int
+  project_assignment    Project_Assignment @relation(fields: [project_assignment_id], references: [id]) // foreign key
+  sections_id           Int
+  sections              Sections           @relation(fields: [sections_id], references: [id]) // foreign key
+
+  students_submission_for_project_assignment students_submission_for_project_assignment[]
+
+  @@unique([project_assignment_id, sections_id])
+}
+
+model Students_File_for_Project_Assignment {
+  id                                            Int                                        @id @default(autoincrement())
+  students_submission_for_project_assignment_id Int
+  students_submission_for_project_assignment    students_submission_for_project_assignment @relation(fields: [students_submission_for_project_assignment_id], references: [id]) //foreign key
+  file_id                                       Int
+  file                                          All_Files                                  @relation(fields: [file_id], references: [id])
+  created_at                                    DateTime                                   @default(now())
+}
+
+model students_submission_for_project_assignment {
+  id                                 Int                             @id @default(autoincrement())
+  student_course_enrollment_id       Int
+  student_course_enrollment          Student_Course_Enrollment       @relation(fields: [student_course_enrollment_id], references: [id]) // foreign key
+  project_assignment_for_sections_id Int
+  project_assignment_for_sections    Project_Assignment_for_sections @relation(fields: [project_assignment_for_sections_id], references: [id]) // foreign key
+  answer_text                        String?
+  feedback                           String?
+  created_at                         DateTime                        @default(now())
+
+  Students_File_for_Project_Assignment Students_File_for_Project_Assignment[]
+
+  @@unique([student_course_enrollment_id, project_assignment_for_sections_id])
+}
+
 model Assessment {
   id                          Int                      @id @default(autoincrement())
   name                        String
   description                 String?
-  assessment_Type             Assessment_Type
   teachers_per_course_term_id Int
   teachers_per_course_term    Teachers_Per_Course_Term @relation(fields: [teachers_per_course_term_id], references: [id]) // foreign key
   is_posted                   Boolean                  @default(false)
@@ -417,6 +640,7 @@ model Assessment {
   Multiple_Choice_Question Multiple_Choice_Question[]
   True_False_Question      True_False_Question[]
   Matching_Column_A        Matching_Column_A[]
+  Matching_Column_B        Matching_Column_B[]
   Essay_Question           Essay_Question[]
   Instruction              Instruction[]
 }
@@ -495,19 +719,9 @@ model Students_answer_for_essay {
 
 //************************************COMMUNICATION RELATED MODELS************************************//
 
-model All_Files {
-  id         Int       @id @default(autoincrement())
-  file_path  String    @unique
-  file_type  File_Type
-  created_at DateTime  @default(now())
-
-  Messages Messages[]
-}
-
 model Messages {
   id                    Int          @id @default(autoincrement())
   content               String?
-  //is_file               Boolean      @default(false)
   file_id               Int?
   file                  All_Files?   @relation(fields: [file_id], references: [id]) // foreign key
   sender_id             String
@@ -515,6 +729,7 @@ model Messages {
   replied_to_message_id Int?
   replied_to_message    Messages?    @relation("MessageReplies", fields: [replied_to_message_id], references: [id]) // self-relation
   message_type          Message_Type
+  is_pinned             Boolean      @default(false)
 
   replied_messages   Messages[]           @relation("MessageReplies")
   Group_Message      Group_Message[]
@@ -598,4 +813,56 @@ model Polls_Choosen {
   created_at     DateTime     @default(now())
 
   @@unique([poll_option_id, chooser_id])
+}
+
+model Forum {
+  id                       Int              @id @default(autoincrement())
+  name                     String
+  description              String
+  courses_per_term_id      Int
+  courses_per_term         Courses_Per_Term @relation(fields: [courses_per_term_id], references: [id]) // foreign key
+  creator_id               String
+  creator                  User             @relation(fields: [creator_id], references: [id]) // foreign key
+  is_visible_to_other_term Boolean          @default(true)
+  created_at               DateTime         @default(now())
+
+  Forum_votes    Forum_votes[]
+  Forum_Comments Forum_Comments[]
+  Forum_Pinned   Forum_Pinned[]
+}
+
+model Forum_votes {
+  id        Int     @id @default(autoincrement())
+  forum_id  Int
+  forum     Forum   @relation(fields: [forum_id], references: [id]) // foreign key
+  is_upvote Boolean
+  voter_id  String
+  voter     User    @relation(fields: [voter_id], references: [id]) // foreign key
+}
+
+model Forum_Pinned {
+  id         Int      @id @default(autoincrement())
+  forum_id   Int
+  forum      Forum    @relation(fields: [forum_id], references: [id]) // foreign key
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id]) // foreign key
+  created_at DateTime @default(now())
+}
+
+model Forum_Comments {
+  id                  Int                   @id @default(autoincrement())
+  forum_id            Int
+  forum               Forum                 @relation(fields: [forum_id], references: [id]) // foreign key
+  comment             String
+  created_at          DateTime              @default(now())
+  Forum_Comment_votes Forum_Comment_votes[]
+}
+
+model Forum_Comment_votes {
+  id                Int            @id @default(autoincrement())
+  forum_comments_id Int
+  forum_comments    Forum_Comments @relation(fields: [forum_comments_id], references: [id]) // foreign key
+  is_upvote         Boolean
+  voter_id          String
+  voter             User           @relation(fields: [voter_id], references: [id]) // foreign key
 }

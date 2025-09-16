@@ -50,9 +50,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    //_controller.readOnly = true;
     // Load document
     //_controller.document = Document.fromJson(kQuillDefaultSample);
-    _controller.document = Document.fromJson([
+    /* _controller.document = Document.fromJson([
       {"insert": "dsgdgs"},
       {"insert": "\n"},
       {"insert": "fgdfgf fg fdgf "},
@@ -62,6 +63,49 @@ class _HomePageState extends State<HomePage> {
       },
       {"insert": " "},
       {"insert": "\n\n"},
+    ]); */
+    _controller.document = Document.fromJson([
+      {"insert": "dsgdgs\nfgdfgf fg fdgf "},
+      {
+        "insert": "fdfg",
+        "attributes": {"size": "72"},
+      },
+      {"insert": " \n\n"},
+      {
+        "insert": "fgf",
+        "attributes": {"size": "72"},
+      },
+      {
+        "insert": "\n",
+        "attributes": {"list": "checked"},
+      },
+      {
+        "insert": "gfdg",
+        "attributes": {"size": "72"},
+      },
+      {
+        "insert": "\n",
+        "attributes": {"list": "checked"},
+      },
+      {
+        "insert": "gdf",
+        "attributes": {"size": "72"},
+      },
+      {
+        "insert": {"timeStamp": "2025-09-15 18:54:55.805669"},
+      },
+      {
+        "insert": "\n",
+        "attributes": {"list": "checked"},
+      },
+      {"insert": "\nd"},
+      {
+        "insert": {"timeStamp": "2025-09-15 18:54:51.314563"},
+      },
+      {
+        "insert":
+            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfg\n\n\n\n\n\n\n\n\n\n\n\n\n\nfgdfg\n",
+      },
     ]);
   }
 

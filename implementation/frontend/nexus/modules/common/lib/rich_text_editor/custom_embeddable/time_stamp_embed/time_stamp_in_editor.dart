@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:common/rich_text_editor/default_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -33,7 +34,7 @@ class TimeStampEmbedBuilder extends EmbedBuilder {
 
   @override
   Widget build(BuildContext context, EmbedContext embedContext) {
-    final defaultStyle = DefaultStyles.getInstance(context);
+    final defaultStyle = customStyle(context);
     final style = defaultStyle.paragraph!.style.copyWith(
       fontFamily: 'times_new_roman',
     );
